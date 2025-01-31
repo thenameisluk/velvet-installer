@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <object class="GtkStack" id="content_box">
+        <child>
+            <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                    <object class="GtkImage">
+                        <property name="file">./velvet.png</property>
+                        <property name="pixel_size">256</property>
+                        <property name="margin_top">10</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkAspectFrame">
+                        <property name="obey-child">false</property>
+                        <property name="ratio">4</property>
+                        <child>
+                            <object class="GtkDropDown">
+                                <property name="model">
+                                    <object class="GtkStringList">
+                                        <items>
+                                            <item>/dev/mmcblk1</item>
+                                        </items>
+                                    </object>
+                                </property>
+                                <property name="margin_top">10</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <!-- <child>
+                    <object class="GtkAspectFrame">
+                        <property name="obey-child">false</property>
+                        <property name="ratio">10</property>
+                        <child>
+                            <object class="GtkProgressBar">
+                                <property name="margin_top">10</property>
+                            </object>
+                        </child>
+                    </object>
+                </child> -->
+                <child>
+                    <object class="GtkAspectFrame">
+                        <property name="obey-child">false</property>
+                        <property name="ratio">2</property>
+                        <child>
+                            <object class="GtkButton" id="btn_install">
+                                <property name="label">install</property>
+                                <property name="margin_top">10</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkAspectFrame">
+                        <child>
+                            <object class="GtkButton" id="btn_about">
+                                <property name="label">about</property>
+                                <property name="margin_top">10</property>
+                                <style>
+                                    <class name="suggested-action" />
+                                </style>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </object>
+</interface>
