@@ -13,3 +13,12 @@ it's meant to automate and ease the process of [regular](https://github.com/hexd
 making it nicer and simpler to perform for less technical users
 
 written in gtk4 and c++ with ❤️
+
+
+
+I'd really want for this project to insterface with software as natively as possible
+
+while stuff like cgpt is fine to integrate with (bsd 3)
+
+at the same time i don't want to relicense project to GPL because ```findmnt``` or ```rsync```
+

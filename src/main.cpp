@@ -6,9 +6,58 @@
 #include <gtkmm/stack.h>
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/button.h>
+#include <gtkmm/textview.h>
+
+
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <sstream>
+#include <functional>
+
+std::string exec(const char* cmd) {
+    std::ostringstream output;
+
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+
+    char buffer[128];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        output << buffer;
+    }
+
+    pclose(pipe);
+    return output.str();
+}
+
+void execCallBack(const char* cmd,std::function<void(const char*)> callback){
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+
+    char buffer[128];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        callback(buffer);
+    }
+
+    pclose(pipe);
+}
+
+class lsblk{
+    
+};
 
 class velvetInsatller:public Gtk::Window{
-    Glib::RefPtr<Gtk::Builder> content;
+    Glib::RefPtr<Gtk::Builder> content = Gtk::Builder::create_from_file("./main.ui");
+    //content
+    Gtk::Stack* stack = content->get_widget<Gtk::Stack>("content_box");
+    Gtk::Button* install_btn = content->get_widget<Gtk::Button>("btn_install");
+    Gtk::Button* abt_btn = content->get_widget<Gtk::Button>("btn_about");
+    Gtk::TextView* tv_log = content->get_widget<Gtk::TextView>("tv_log");
 
     Gtk::AboutDialog* abt;
 
@@ -19,14 +68,31 @@ class velvetInsatller:public Gtk::Window{
         set_resizable(false);
 
         //main content
-        content = Gtk::Builder::create_from_file("./main.ui");
-        auto stack = content->get_widget<Gtk::Stack>("content_box");
         set_child(*stack);
+        install_btn->signal_clicked().connect(sigc::mem_fun(*this,&velvetInsatller::on_install_btn));
 
         //about dialog
-        auto abt_btn = content->get_widget<Gtk::Button>("btn_about");
-
         abt_btn->signal_clicked().connect(sigc::mem_fun(*this,&velvetInsatller::on_abt_clicked));
+    }
+    void on_progress(int prog){
+
+    }
+    void on_new_state(std::string state){
+
+    }
+
+    void on_new_log(std::string log){
+        tv_log->get_buffer()->set_text(tv_log->get_buffer()->get_text().append(log));
+    }
+
+    void on_install_btn(){
+        std::cout << exec("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n") << std::endl;
+
+        execCallBack("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n",sigc::mem_fun(*this,&velvetInsatller::on_new_log));
+        
+        auto children = stack->get_children();
+        
+        stack->set_visible_child(*(children[1]));
     }
 
     void on_abt_clicked(){

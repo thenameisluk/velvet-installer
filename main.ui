@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
     <object class="GtkStack" id="content_box">
+        <property name="transition-type">GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT</property>
         <child>
             <object class="GtkBox">
                 <property name="orientation">vertical</property>
+                <property name="spacing">10</property>
                 <child>
                     <object class="GtkImage">
                         <property name="file">./assets/velvet.png</property>
                         <property name="pixel_size">256</property>
-                        <property name="margin_top">10</property>
                     </object>
                 </child>
                 <child>
@@ -24,7 +25,6 @@
                                         </items>
                                     </object>
                                 </property>
-                                <property name="margin_top">10</property>
                             </object>
                         </child>
                     </object>
@@ -34,7 +34,6 @@
                         <child>
                             <object class="GtkExpander">
                                 <property name="label">Advanced Options</property>
-                                <property name="margin_top">10</property>
                                 <child>
                                     <object class="GtkLabel">
                                         <property name="label">None</property>
@@ -68,7 +67,6 @@
                         <child>
                             <object class="GtkButton" id="btn_install">
                                 <property name="label">Install</property>
-                                <property name="margin_top">10</property>
                             </object>
                         </child>
                     </object>
@@ -78,7 +76,6 @@
                         <child>
                             <object class="GtkButton" id="btn_about">
                                 <property name="label">About</property>
-                                <property name="margin_top">10</property>
                                 <style>
                                     <class name="suggested-action" />
                                 </style>
@@ -86,6 +83,38 @@
                         </child>
                     </object>
                 </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="homogeneous">false</property>
+                <property name="spacing">10</property>
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">initializing</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkAspectFrame">
+                        <property name="hexpand">true</property>
+                        <property name="vexpand">true</property>
+                        <property name="margin-bottom">15</property>
+                        <child>
+                            <object class="GtkScrolledWindow">
+
+                                <child>
+                                    <object class="GtkTextView" id="tv_log">
+                                        <property name="editable">false</property>
+                                        <property name="wrap-mode">GTK_WRAP_CHAR</property>
+                                    </object>
+                                </child>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+
+
             </object>
         </child>
     </object>
