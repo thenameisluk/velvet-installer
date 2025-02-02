@@ -8,6 +8,9 @@
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 
+#include <glibmm.h>
+#include <glibmm/binding.h>
+
 
 #include <cstdio>
 #include <memory>
@@ -15,6 +18,7 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <fstream>
 
 std::string exec(const char* cmd) {
     std::ostringstream output;
@@ -47,6 +51,17 @@ void execCallBack(const char* cmd,std::function<void(const char*)> callback){
     pclose(pipe);
 }
 
+std::string cat(const char* path){
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error(std::string("Error: Could not open file ")+path);
+    }
+
+    std::ostringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
+}
+
 class lsblk{
     
 };
@@ -66,6 +81,8 @@ class velvetInsatller:public Gtk::Window{
         set_title("velvet installer");
         set_default_size(500,500);
         set_resizable(false);
+
+        // Glib::
 
         //main content
         set_child(*stack);

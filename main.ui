@@ -49,17 +49,6 @@
                         </child>
                     </object>
                 </child>
-                <!-- <child>
-                    <object class="GtkAspectFrame">
-                        <property name="obey-child">false</property>
-                        <property name="ratio">10</property>
-                        <child>
-                            <object class="GtkProgressBar">
-                                <property name="margin_top">10</property>
-                            </object>
-                        </child>
-                    </object>
-                </child> -->
                 <child>
                     <object class="GtkAspectFrame">
                         <property name="obey-child">false</property>
@@ -90,16 +79,12 @@
                 <property name="orientation">vertical</property>
                 <property name="homogeneous">false</property>
                 <property name="spacing">10</property>
-                <child>
-                    <object class="GtkLabel">
-                        <property name="label">initializing</property>
-                    </object>
-                </child>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">10</property>
                 <child>
                     <object class="GtkAspectFrame">
                         <property name="hexpand">true</property>
                         <property name="vexpand">true</property>
-                        <property name="margin-bottom">15</property>
                         <child>
                             <object class="GtkScrolledWindow">
 
@@ -113,8 +98,12 @@
                         </child>
                     </object>
                 </child>
-
-
+                <child>
+                    <object class="GtkProgressBar">
+                        <property name="text">initializing</property>
+                        <property name="show-text">true</property>
+                    </object>
+                </child>
             </object>
         </child>
     </object>

@@ -16,9 +16,8 @@ written in gtk4 and c++ with ❤️
 
 
 
-I'd really want for this project to insterface with software as natively as possible
+I'd really want for this project to interface with software as natively as possible
 
-while stuff like cgpt is fine to integrate with (bsd 3)
+while stuff like cgpt is fine to integrate with (bsd 3), make files make it hard to use
 
 at the same time i don't want to relicense project to GPL because ```findmnt``` or ```rsync```
-
