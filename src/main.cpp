@@ -19,6 +19,9 @@
 #include <sstream>
 #include <functional>
 #include <fstream>
+#include <mutex>
+#include <queue>
+#include <thread>
 
 std::string exec(const char* cmd) {
     std::ostringstream output;
@@ -76,13 +79,17 @@ class velvetInsatller:public Gtk::Window{
 
     Gtk::AboutDialog* abt;
 
+    std::mutex lock_log;
+    std::queue<std::string> queue_log;
+    float progress;
+
     public:
     velvetInsatller():abt(){
         set_title("velvet installer");
         set_default_size(500,500);
         set_resizable(false);
 
-        // Glib::
+        Glib::signal_idle().connect(sigc::mem_fun(*this,&velvetInsatller::tick));        
 
         //main content
         set_child(*stack);
@@ -90,6 +97,18 @@ class velvetInsatller:public Gtk::Window{
 
         //about dialog
         abt_btn->signal_clicked().connect(sigc::mem_fun(*this,&velvetInsatller::on_abt_clicked));
+    }
+
+    bool tick(){
+        std::unique_lock lock(lock_log);
+        while(!queue_log.empty()){
+            std::string log = queue_log.front();
+            tv_log->get_buffer()->set_text(tv_log->get_buffer()->get_text().append(log));
+
+            queue_log.pop();
+        }
+
+        return true;
     }
     void on_progress(int prog){
 
@@ -99,13 +118,20 @@ class velvetInsatller:public Gtk::Window{
     }
 
     void on_new_log(std::string log){
-        tv_log->get_buffer()->set_text(tv_log->get_buffer()->get_text().append(log));
+        std::unique_lock lock(lock_log);
+
+        queue_log.push(log);
     }
 
     void on_install_btn(){
         std::cout << exec("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n") << std::endl;
+        
+        std::thread([this](){
+            while(true)
+                execCallBack("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n",sigc::mem_fun(*this,&velvetInsatller::on_new_log));
 
-        execCallBack("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n",sigc::mem_fun(*this,&velvetInsatller::on_new_log));
+        }).detach();
+        
         
         auto children = stack->get_children();
         
