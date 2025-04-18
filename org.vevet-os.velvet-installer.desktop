@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Velvet Installer
+Type=Application
+Exec=/opt/velvet-installer/velvet-installer
+Path=/opt/velvet-installer/
+Icon=/opt/velvet-installer/assets/icon.png

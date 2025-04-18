@@ -1,0 +1,6 @@
+Package: velvet-installer
+Version: VERSION
+Maintainer: luk
+Architecture: arm64
+Depends: libgtkmm-4.0-dev, velvet-tools
+Description: gtk4 wrapper for vtinstall

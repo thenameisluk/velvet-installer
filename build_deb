@@ -1,0 +1,27 @@
+#!/bin/bash
+VERSION=0.0.1
+
+rm -rf deb
+rm -rf build
+
+mkdir build
+
+cd build
+cmake ..
+make
+cd ..
+
+mkdir -p deb/opt/velvet-installer
+mkdir -p deb/usr/share/applications
+mkdir -p deb/DEBIAN
+cp -v org.vevet-os.velvet-installer.desktop deb/usr/share/applications/
+cp -v build/velvet-installer deb/opt/velvet-installer/
+cp -r -v assets deb/opt/velvet-installer/assets
+cp -v main.ui deb/opt/velvet-installer/
+cp control deb/DEBIAN/
+
+sed -i "s/VERSION/${VERSION}/g" deb/DEBIAN/control
+
+dpkg-deb --build --root-owner-group deb
+
+mv deb.deb velvet-installer-${VERSION}_arm64.deb -v

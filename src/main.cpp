@@ -7,67 +7,49 @@
 #include <gtkmm/aboutdialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
+#include <gtkmm/dropdown.h>
+#include <gtkmm/stringlist.h>
+#include <gtkmm/progressbar.h>
+#include <gtkmm/picture.h>
+#include <gtkmm/image.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include <glibmm.h>
 #include <glibmm/binding.h>
 
-
-#include <cstdio>
-#include <memory>
-#include <stdexcept>
 #include <string>
-#include <sstream>
-#include <functional>
-#include <fstream>
 #include <mutex>
 #include <queue>
 #include <thread>
 
-std::string exec(const char* cmd) {
-    std::ostringstream output;
+#include "shell.hpp"
 
-    FILE* pipe = popen(cmd, "r");
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+std::vector<std::string> split(std::string text,char c){
+    bool prev = true;
+    std::vector<std::string> out;
+
+    std::string element;
+
+    for(int i = 0;i<text.length();i++){
+        if(text.at(i)==c){
+            if(!prev){
+                out.push_back(element);
+                element = "";
+                prev = true;
+
+            }
+        }else{
+            element+=text.at(i);
+            prev = false;
+        }
     }
 
-    char buffer[128];
-    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        output << buffer;
-    }
-
-    pclose(pipe);
-    return output.str();
+    return out;
 }
 
-void execCallBack(const char* cmd,std::function<void(const char*)> callback){
-    FILE* pipe = popen(cmd, "r");
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-
-    char buffer[128];
-    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        callback(buffer);
-    }
-
-    pclose(pipe);
+std::vector<std::vector<std::string>> parseTable(std::string text,int skip = 0){
+    return {{}};
 }
-
-std::string cat(const char* path){
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        throw std::runtime_error(std::string("Error: Could not open file ")+path);
-    }
-
-    std::ostringstream ss;
-    ss << file.rdbuf();
-    return ss.str();
-}
-
-class lsblk{
-    
-};
 
 class velvetInsatller:public Gtk::Window{
     Glib::RefPtr<Gtk::Builder> content = Gtk::Builder::create_from_file("./main.ui");
@@ -76,18 +58,31 @@ class velvetInsatller:public Gtk::Window{
     Gtk::Button* install_btn = content->get_widget<Gtk::Button>("btn_install");
     Gtk::Button* abt_btn = content->get_widget<Gtk::Button>("btn_about");
     Gtk::TextView* tv_log = content->get_widget<Gtk::TextView>("tv_log");
+    Gtk::DropDown* list = content->get_widget<Gtk::DropDown>("device_list");
+    Gtk::Image* statimg = content->get_widget<Gtk::Image>("statusIMG");
+    Gtk::ScrolledWindow* scrol = content->get_widget<Gtk::ScrolledWindow>("out_scroll");
+
+    Gtk::Picture logo;
 
     Gtk::AboutDialog* abt;
 
+    Glib::RefPtr<Gtk::StringList> devices = Gtk::StringList::create();
+
     std::mutex lock_log;
     std::queue<std::string> queue_log;
-    float progress;
+    float progress = 0;
+    std::string state;
 
     public:
     velvetInsatller():abt(){
         set_title("velvet installer");
         set_default_size(500,500);
         set_resizable(false);
+
+        logo.set_filename("./assets/luk.png");
+
+        list->set_model(devices);
+        refresh_devices();
 
         Glib::signal_idle().connect(sigc::mem_fun(*this,&velvetInsatller::tick));        
 
@@ -99,8 +94,17 @@ class velvetInsatller:public Gtk::Window{
         abt_btn->signal_clicked().connect(sigc::mem_fun(*this,&velvetInsatller::on_abt_clicked));
     }
 
+    void refresh_devices(){
+        while(devices->get_n_items())
+            devices->remove(0);
+
+        for(std::string dev : split(exec("SHUT=\"yes\" /usr/bin/vtinstall"),'\n')){
+            devices->append(dev);
+        }
+    }
     bool tick(){
         std::unique_lock lock(lock_log);
+
         while(!queue_log.empty()){
             std::string log = queue_log.front();
             tv_log->get_buffer()->set_text(tv_log->get_buffer()->get_text().append(log));
@@ -108,13 +112,10 @@ class velvetInsatller:public Gtk::Window{
             queue_log.pop();
         }
 
+        auto adj = scrol->get_vadjustment();
+        adj->set_value(adj->get_upper() - adj->get_page_size());
+
         return true;
-    }
-    void on_progress(int prog){
-
-    }
-    void on_new_state(std::string state){
-
     }
 
     void on_new_log(std::string log){
@@ -123,12 +124,27 @@ class velvetInsatller:public Gtk::Window{
         queue_log.push(log);
     }
 
+    void on_install_exit(int code){
+        if(code==0){
+            statimg->set("./assets/success.png");
+        }else{
+            statimg->set("./assets/fail.png");
+        }
+    }
+
     void on_install_btn(){
-        std::cout << exec("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n") << std::endl;
         
-        std::thread([this](){
-            while(true)
-                execCallBack("/usr/bin/lsblk --raw -o NAME,MOUNTPOINTS -n",sigc::mem_fun(*this,&velvetInsatller::on_new_log));
+        std::string device = devices->get_string(list->get_selected());
+
+        std::cout << "selected  " << device << std::endl;
+
+        if(device=="")
+            return;
+
+        std::thread([this,device](){
+            std::string command = "pkexec /usr/bin/vtinstall "+device+" shut";
+            on_new_log(command);
+            execCallBack(command.c_str(),sigc::mem_fun(*this,&velvetInsatller::on_new_log),sigc::mem_fun(*this,&velvetInsatller::on_install_exit));
 
         }).detach();
         
@@ -148,6 +164,8 @@ class velvetInsatller:public Gtk::Window{
         
         abt = new Gtk::AboutDialog();
 
+        abt->set_logo(logo.get_paintable());
+        
         abt->set_program_name("velvet installer");
         abt->set_version("0.0.1");
         abt->set_transient_for(*this);
@@ -171,17 +189,7 @@ class velvetInsatller:public Gtk::Window{
 };
 
 int main(int argc, char **argv){
-    //https://unix.stackexchange.com/questions/203136/how-do-i-run-gui-applications-as-root-by-using-pkexec    
-    // if(getuid()){
-    //     std::cout << "root access required" << std::endl;
-    //     std::string cmd = "pkexec ";
-    //     char p[100];
-    //     readlink("/proc/self/exe",p,99);
-    //     cmd.append(p);
-    //     std::cout << cmd << std::endl;
-    //     return system(cmd.c_str());
-    // }
-    // std::cout << "running as root" << std::endl;
+    //https://unix.stackexchange.com/questions/203136/how-do-i-run-gui-applications-as-root-by-using-pkexec
 
 
     auto app = Gtk::Application::create("org.vevet-os.velvet-installer");

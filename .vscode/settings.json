@@ -38,5 +38,6 @@
         "format": "cpp",
         "text_encoding": "cpp",
         "sstream": "cpp"
-    }
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/g++-14"
 }

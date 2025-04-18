@@ -5,19 +5,24 @@ find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-4.0)
 
 link_directories(
-    ${GTKMM_LIBRARY_DIRS}  )
+    ${GTKMM_LIBRARY_DIRS}
+)
 
 include_directories(
-    ${GTKMM_INCLUDE_DIRS}  )
+    ${GTKMM_INCLUDE_DIRS}
+    include/
+)
 
 add_executable(velvet-installer
     src/main.cpp
+    src/shell.cpp
 )
 
-include_directories(include/)
+include_directories()
 
 target_link_libraries(velvet-installer
-    ${GTKMM_LIBRARIES}  )
+    ${GTKMM_LIBRARIES}
+)
 
 add_custom_command(TARGET ${PROJECT_NAME}
 POST_BUILD
